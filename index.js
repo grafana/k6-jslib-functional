@@ -251,24 +251,12 @@ let expect = function(value1){
   return state;
 };
 
-let pool = [];
+function handleUnexpectedException(e, testName){
+  console.error(`Exception raised in test "${testName}". Failing the test and continuing. \n${e}`)
 
-function chained(name, setup) {
-  setup((name, fn) => {
-    pool.push(() => {
-      group(name, () => {
-        fn({ expect });
-      });
+  check(null, {
+     [`Exception raised "${e}"`]: false
     });
-  });
-  try {
-    pool.forEach((test) => test());
-  } catch (err) {
-    if (err.brokenChain) {
-      return false;
-    }
-    throw err;
-  }
 }
 
 let test = function(testName, arrow){
@@ -288,7 +276,8 @@ let test = function(testName, arrow){
         success = false;
       }
       else{
-        throw e; // rethrow if the exception wasn't of type JyskBrokenChainException
+        success = false;
+        handleUnexpectedException(e, testName)
       }
     }
   });
@@ -298,5 +287,4 @@ let test = function(testName, arrow){
 
 export {
   test,
-  chained,
 }
